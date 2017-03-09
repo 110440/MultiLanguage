@@ -21,7 +21,7 @@ sys.setdefaultencoding('utf-8') #设置默认编码,只能是utf-8,下面\u4e00-
 
 KSourceFile = 'Base.lproj/*.xib'
 
-KTargetFile = '*.lproj/*.strings'  
+KTargetFile = '*.lproj/*.strings'
 
 KGenerateStringsFile = 'TempfileOfStoryboardNew.strings'
 
@@ -156,19 +156,29 @@ def generateStoryboardStringsfile(storyboard_path,tempstrings_path):
 	if os.system(cmdstring) == 0:
 		return 1
 
-def main():
-	filePath = sys.argv[1]
-	sourceFilePath = filePath + '/' + KSourceFile 
+
+def getPaths(path):
+    path_collection=[]
+    for dirpath,dirnames,filenames in os.walk(path):
+        for dir in dirnames:
+            fullpath=os.path.join(dirpath,dir)
+            path_collection.append(fullpath)
+    return path_collection
+
+
+def runPath(filePath,sourceFilePath,targetFilePath):
+	
 	sourceFile_list = glob.glob(sourceFilePath)
 	if len(sourceFile_list) == 0:
 		print sourceFilePath + 'error dictionary,you should choose the dic upper the Base.lproj'
 		return
-	targetFilePath = filePath + '/' + KTargetFile
+			
 	targetFile_list = glob.glob(targetFilePath)
 	tempFile_Path = filePath + '/' + KGenerateStringsFile
 	if len(targetFile_list) == 0:
 		print 'error framework , no .lproj dic was found'
 		return
+
 	for sourcePath in sourceFile_list:
 		sourceprefix = extractFilePrefix(sourcePath)
 		sourcename = extractFileName(sourcePath)
@@ -177,7 +187,7 @@ def main():
 			print '- - genstrings %s successfully'%sourcename
 			for targetPath in targetFile_list:
 				targetprefix = extractFilePrefix(targetPath)
-				targetname = extractFileName(targetPath) 
+				targetname = extractFileName(targetPath)
 				if cmp(sourceprefix,targetprefix) == 0:
 					print '- - dealing with %s'%targetPath
 					compareWithFilePath(tempFile_Path,targetPath)
@@ -186,6 +196,48 @@ def main():
 		else:
 			print '- - genstrings %s error'%sourcename
 
+
+def main():
+	filePath = sys.argv[1]
+
+	sourceFilePath = filePath + '/' + KSourceFile
+	targetFilePath = filePath + '/' + KTargetFile
+	runPath(filePath,sourceFilePath,targetFilePath)
+	
+	for dirpath in getPaths(filePath):
+		sourceFilePath = dirpath + '/' + KSourceFile
+		targetFilePath = dirpath + '/' + KTargetFile
+		runPath(filePath,sourceFilePath,targetFilePath)
+#	
+#	
+#	sourceFilePath = filePath + '/' + KSourceFile
+#	sourceFile_list = glob.glob(sourceFilePath)
+#	if len(sourceFile_list) == 0:
+#		print sourceFilePath + 'error dictionary,you should choose the dic upper the Base.lproj'
+#		return
+#	targetFilePath = filePath + '/' + KTargetFile
+#	targetFile_list = glob.glob(targetFilePath)
+#	tempFile_Path = filePath + '/' + KGenerateStringsFile
+#	if len(targetFile_list) == 0:
+#		print 'error framework , no .lproj dic was found'
+#		return
+#	for sourcePath in sourceFile_list:
+#		sourceprefix = extractFilePrefix(sourcePath)
+#		sourcename = extractFileName(sourcePath)
+#		print 'init with %s'%sourcename
+#		if generateStoryboardStringsfile(sourcePath,tempFile_Path) == 1:
+#			print '- - genstrings %s successfully'%sourcename
+#			for targetPath in targetFile_list:
+#				targetprefix = extractFilePrefix(targetPath)
+#				targetname = extractFileName(targetPath) 
+#				if cmp(sourceprefix,targetprefix) == 0:
+#					print '- - dealing with %s'%targetPath
+#					compareWithFilePath(tempFile_Path,targetPath)
+#			print 'finish with %s'%sourcename
+#			os.remove(tempFile_Path)
+#		else:
+#			print '- - genstrings %s error'%sourcename
+#
 
 
 
